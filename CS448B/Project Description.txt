@@ -1,0 +1,6 @@
+Description
+My application is relatively simple. The small blue dots are trees. They can be filter by breast height in inches. Clicking on the map creates a new filter circle. Clicking on the corner of the circle resizes that circle and clicking in the center drags the circle.
+
+Commentary on Development Process:
+
+I believe I spent about 15 hours on this. The main reason for that was little bugs related to D3 that tripped me up for hurs at a time. It was really interesting to be able to create a visualization from scratch just because of how free I was with regards to design choices. I used a variety of sources for help with D3 development, from stack overflow.

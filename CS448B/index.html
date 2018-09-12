@@ -1,0 +1,249 @@
+<html>
+    <head>
+        <title>Dynamic Tree Visualization</title>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <link rel="stylesheet" href="index.css">
+            </head>
+    <body>
+        <h1> Dynamic Tree Visualization (San Francisco)</h1>
+        <h6> Blue dots are trees in San Francisco. Click on the map to create new filter circles. Use the filter by breast height button to further filter the data </h6>
+        <!--<div id="option">
+            <input name="ClearSel"
+            type="button"
+            value="Clear Selection Circles"
+            onclick="clearSel()"/> -->
+            <div>
+                <div id="slidecontainer">
+                    <p>Breast Height in inches (Greater than): <span id="span"></span></p>
+                    <input type="range" min="0" max="100" value="0" class="slider" id="myRange">
+                        
+                        </div>
+                <div id="visualization_area"></div>
+                <script>
+                    
+                    
+                    
+                    
+                    var slider = document.getElementById("myRange");
+                    var output = document.getElementById("span");
+                    output.innerHTML = slider.value;
+                    
+                    slider.oninput = function() {
+                        output.innerHTML = this.value;
+                        cur_bh_filter = slider.value;
+                        var hidden =  d3.selectAll('circle[visibility=hidden]');
+                        var visible =  d3.selectAll('circle[visibility=visible]');
+                        set_visibility();
+                        if (sel_num === 0){
+                            visible.each(function(d) {
+                                         if (cur_bh_filter > parseFloat(d3.select(this).attr("bheight"))){
+                                         d3.select(this).attr("visibility", "hidden");
+                                         }
+                                         });
+                                         hidden.each(function(d) {
+                                                     if (cur_bh_filter < parseFloat(d3.select(this).attr("bheight"))){
+                                                     d3.select(this).attr("visibility", "visible");
+                                                     }
+                                                     });
+                            
+                        }
+                                                  
+                                                  
+                                                  
+                    }
+          
+                
+                function clearSel() {
+                    var sel_circles = svg.selectAll(".sel_circles").remove();
+                    svg.selectAll('circle[visibility=hidden]').attr("visibility", "visible");
+                    
+                    sel_num = 0;
+                }
+                //Drawing the map
+                var mapWidth = 750;
+                var mapHeight = 750;
+                var projection = d3.geoMercator()
+                .center([-122.433701, 37.767683]) // San Francisco, roughly
+                .scale(225000)
+                .translate([mapWidth / 2, mapHeight / 2]);
+                
+                var svg = d3.select('body').append('svg')
+                .attr('width', mapWidth)
+                .attr('height', mapHeight);
+                
+                
+                
+                svg.append('image')
+                .attr('width', mapWidth)
+                .attr('height', mapHeight)
+                .attr('xlink:href', 'data/sf-map.svg');
+                function distance ( x1,  x2, y1,  y2){
+                    return Math.sqrt(Math.pow(x1-x2,2) + Math.pow(y1-y2,2));
+                }
+                
+                var sel_color = ["blue", "green"];
+                var sel_num = 0;
+                var cur_bh_filter = 0;
+                var insections = [];
+                function set_visibility(){
+                    var sel_circles = d3.selectAll(".sel_circles");
+                    var hidden =  d3.selectAll('circle[visibility=hidden]');
+                    var visible =  d3.selectAll('circle[visibility=visible]');
+                    var i =0;
+                    var sel1_cx, sel1_cy ;
+                    var sel2_cx, sel2_cy ;
+                    var sel1_r , sel2_r;
+                    sel_circles.each(function(c){
+                                     var sel_circ = this;
+                                     if (i === 0){
+                                     sel1_cx = parseFloat(d3.select(this).attr("cx"));
+                                     sel1_cy = parseFloat(d3.select(this).attr("cy"));
+                                     sel1_r = parseFloat(d3.select(this).attr("r"));
+                                     }
+                                     if (i === 1){
+                                     sel2_cx = parseFloat(d3.select(this).attr("cx"));
+                                     sel2_cy = parseFloat(d3.select(this).attr("cy"));
+                                     sel2_r = parseFloat(d3.select(this).attr("r"));
+                                     }
+                                     visible.each(function(d) {
+                                                  var distance  = Math.sqrt(
+                                                                            Math.pow((d3.select(this).attr("cx")-parseFloat(d3.select(sel_circ).attr("cx"))),2) +
+                                                                            Math.pow((d3.select(this).attr("cy")-parseFloat(d3.select(sel_circ).attr("cy"))),2) );
+                                                
+                                                  if (distance > parseFloat(d3.select(sel_circ).attr("r")) || cur_bh_filter > parseFloat(d3.select(this).attr("bheight"))){
+                                                  d3.select(this).attr("visibility", "hidden");
+                                                  
+                                                  
+                                                  }
+                                                  });
+                                     hidden.each(function(d) {
+                                                 var distance  = Math.sqrt(
+                                                                           Math.pow((d3.select(this).attr("cx")-parseFloat(d3.select(sel_circ).attr("cx"))),2) +
+                                                                           Math.pow((d3.select(this).attr("cy")-parseFloat(d3.select(sel_circ).attr("cy"))),2) );
+                                                 if (distance < parseFloat(d3.select(sel_circ).attr("r")) && cur_bh_filter < parseFloat(d3.select(this).attr("bheight"))  ){
+                                                 d3.select(this).attr("visibility", "visible");
+                                                
+                                                 }
+                                                 });
+                                     
+                                     i++;
+                                     });
+                                     
+                                     if (sel_num === 2){
+                                         var visible = d3.selectAll('circle[visibility=visible]');
+                                         visible.each(function(d) {
+                                                      var distance1 = distance(parseFloat(d3.select(this).attr("cx")),sel1_cx,
+                                                                               parseFloat(d3.select(this).attr("cy")), sel1_cy);
+                                                      var distance2 = distance(parseFloat(d3.select(this).attr("cx")),sel2_cx,
+                                                                               parseFloat(d3.select(this).attr("cy")), sel2_cy);
+                                                      if (distance1 > sel1_r || distance2 > sel2_r   ){
+                                                      d3.select(this).attr("visibility", "hidden");
+                                                     
+                                                      }
+                                                      });
+                                     }
+                                     
+                }
+                function intersection(){
+                    set_visibility();
+                };
+                
+                
+                
+                
+                function sel_drag(d) {
+                    var sel_circles_outer = d3.selectAll('circle[class=sel_circles_outer]');
+                    var id = parseFloat(d3.select(this).attr("id"));
+                    sel_circles_outer.each(function(d) {
+                                     var inner_id = parseFloat(d3.select(this).attr("id"));
+                                     if (inner_id === id){
+                                           d3.select(this)
+                                           .attr("cx", d3.event.x)
+                                           .attr("cy", d3.event.y);
+                                     }
+                                           });
+                                                  d3.select(this)
+                                                  .attr("cx", d3.event.x)
+                                                  .attr("cy", d3.event.y);
+                                              set_visibility();
+                }
+                function sel_resize(){
+                    var distance  = Math.sqrt(
+                                              Math.pow((d3.select(this).attr("cx")-d3.event.x),2) +
+                                              Math.pow((d3.select(this).attr("cy")-d3.event.y),2) );
+                                             var sel_circles = d3.selectAll('circle[class=sel_circles]');
+                                             var id = parseFloat(d3.select(this).attr("id"));
+                                             sel_circles.each(function(d) {
+                                                      var inner_id = parseFloat(d3.select(this).attr("id"));
+                                                              if (inner_id === id){
+                                                              d3.select(this)
+                                                              .attr("r", distance);
+                                                              }
+                                                              
+                                                              });
+                                             d3.select(this)
+                                             .attr("r", distance+5);
+                                               set_visibility();
+                }
+                
+                svg.on("click", function() {
+                       if (sel_num <2) {
+                       var coords = d3.mouse(this);
+                       var circle = svg.append('circle')
+                       .attr('cx', coords[0])
+                       .attr('cy', coords[1])
+                       .attr('r', 60)
+                       .attr('opacity', .4)
+                       .attr('fill', sel_color[sel_num])
+                       .attr('class', "sel_circles_outer")
+                       .call(d3.drag().on("drag", sel_resize))
+                       .attr('stroke', "black")
+                       .attr('stroke-width', "10")
+                       .attr("id",sel_num+1);
+                       var circle = svg.append('circle')
+                       .attr('cx', coords[0])
+                       .attr('cy', coords[1])
+                       .attr('r', 55)
+                       .attr('opacity', .1)
+                       .attr('fill',sel_color[sel_num])
+                       .attr('class', "sel_circles")
+                       .call(d3.drag().on("drag", sel_drag))
+                       .attr("id", sel_num+1);
+                       sel_num++;
+                       intersection();
+                       }
+                       else {
+                       
+                       }
+                       });
+                       
+                       
+                       //learnjsdata.com
+                       d3.csv("data/trees.csv", function(error, data) {
+                              data.forEach(function(d){ d['columnName'] = +d['columnName']; });
+                              
+                              if (error){
+                              return console.warn(error);
+                              }
+                              //Visualize data
+                              
+                              data.forEach(function(d){
+                                           var projectedLocation = projection([d["Longitude"], d["Latitude"]]);
+                                           var circle = svg.append('circle')
+                                           
+                                           .attr('cx', projectedLocation[0])
+                                           .attr('cy', projectedLocation[1])
+                                           .attr('bheight',d["DBH"])
+                                           .attr('r', 1)
+                                           .attr("fill", "DarkBlue")
+                                           .attr("visibility", "visible");
+                                           
+                                           
+                                           });
+                              
+                              
+                              
+                              });
+                    </script>
+                </body>
+</html>
