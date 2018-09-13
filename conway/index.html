@@ -11,14 +11,11 @@
 	    		margin-right:1%;
 	    		margin-top:1%;
 				}
-				#header_container{
-					
-				}
+
 				h1 {
 				text-align: center;
 				font-family: "Times New Roman", Times, serif;
 				font-size: 300%;
-				
 				color: #0099ff;	
 				text-shadow: 0px 3px 0px #b2a98f,
 	                 0px 14px 10px rgba(0,0,0,0.15),
@@ -31,16 +28,13 @@
 	  				width: 50vw;
 	  				display: block;
 	    			margin-left: auto;
-	    			margin-right: auto;
-
-					 
-					 
+	    			margin-right: auto; 
 				}
+
 				.box {
 					-webkit-user-select: none; /* Chrome/Safari */        
--moz-user-select: none; /* Firefox */
--ms-user-select: none; /* IE10+ */
-
+					-moz-user-select: none; /* Firefox */
+					-ms-user-select: none; /* IE10+ */
 	  				display:inline-block;
 	  				margin-top: 1.5vw;
 	  				background: rgba(255,255,255,0.2);
@@ -52,21 +46,21 @@
 
 				.button {
 					-webkit-user-select: none; /* Chrome/Safari */        
--moz-user-select: none; /* Firefox */
--ms-user-select: none; /* IE10+ */
-
+					-moz-user-select: none; /* Firefox */
+					-ms-user-select: none; /* IE10+ */
 	  				font-size: 2em;
 	  				padding: 10px;
 	  				color: #0099ff;
-	  				border: 2px solid #ffe600;
+	  				border: 2px solid #808080;
 	  				border-radius: 20px/50px;
 	  				text-decoration: none;
 	  				cursor: pointer;
 	  				transition: all 0.3s ease-out;
-
 				}
+
 				.button:hover {
-	  				background: #fff9c3;
+	  				color: #fff;
+	  				background: #3bb1ff;
 				}
 
 				.overlay {
@@ -80,6 +74,7 @@
 	  				visibility: hidden;
 	  				opacity: 0;
 				}
+
 				.overlay:target {
 	 				visibility: visible;
 	  				opacity: 1;
@@ -100,6 +95,7 @@
 	  				color: #333;
 	  				font-family: Tahoma, Arial, sans-serif;
 				}
+
 				.popup .close {
 	  				position: absolute;
 	  				top: 20px;
@@ -110,9 +106,11 @@
 	  				text-decoration: none;
 	  				color: #333;
 				}
+
 				.popup .close:hover {
 	  				color: #0099ff;
 				}
+
 				.popup .content {
 	  				max-height: 30%;
 	  				overflow: auto;
@@ -137,33 +135,66 @@
 			<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id ="svg" width="100%" height="100%" overflow="visible">
 	  		<!-- <rect width="300" height="100" style="fill:rgb(0,0,255);stroke-width:3;stroke:rgb(0,0,0)" /> -->
 			<rect className="rect" id="big_rect" width="100%" height="100%" />
+			
+			</svg>
+			<div class="box">
+				<a class="button" onclick="next()">Next</a>
+			</div>
+			<div class="box" id="start_box">
+				<a id="start" class="button"  onclick="start()">Start</a>
+			</div>
+			<div class="box" id="stop_box">
+				<a id="stop" class="button" onclick="stop()">Abort</a>
+			</div>
+			<div class="box">
+				<a class="button" onclick="randomize_grid()">Randomize</a>
+			</div>
+			<div class="box">
+				<a class="button" href="#popup1">About</a>
+			</div>
+			<div class="box">
+			<p style="color:#0099ff;font-size: 150%;">Delay</p>
+			<div class="slidecontainer" display="inline-block">
+ 				 <input type="range" min="1" max="85" value="50" class="slider" id="delay_slider">
+			</div>
+			</div>
+			<div class="box">
+			<p style="color:#0099ff;font-size: 150%;">Seed Density</p>
+			<div class="slidecontainer" display="inline-block">
+ 				 <input type="range" min="10" max="70" value="15" class="slider" id="density_slider">
+			</div>
+			</div>
+			<div class="box">
+			<p id="gen_id"style="color:#0099ff;font-size: 150%;">Generation: 0</p>
+			</div>
+			<div class="box">
+			<p id="count_id"style="color:#0099ff;font-size: 150%;">Live Cells: 0</p>
+			</div>
 			<script type="text/javascript">
 			
 			var svg = document.getElementById('svg');
-	   		var num_squares_x = 65;
+	   		var num_squares_x = 65; // max 65 without weird issues.
+	   		var rand_weight = .80;
+	   		var gen_count = 0;
+	   		var live_count = 0;
+	   		var delay = 90; // delay time in milliseconds
 	   		var num_grid = Array.apply(null, Array(num_squares_x*num_squares_x)).map(Number.prototype.valueOf,1);
 	   		var rect_grid = new Array(num_squares_x*num_squares_x);
-	   		var started = false;
 	   		var running = false;
 	   		
 	   		// Create board function, creates grid and populates screen
 			function create_board (svg, num_squares_x, num_grid, rect_grid){
-				console.log("created board");
 				var bBox = big_rect.getBBox();
-				//console.log(bBox.width);
 	    		var num_squares_y = num_squares_x;
 	    		var box_size = bBox.width/num_squares_x;
-	    		
 	    		var stroke_width = 0.1;
-
+	    		
 	    		var count_z = 0;
 	    		for (var x = 0; x < bBox.width; x += (box_size+stroke_width)) {
 	    			count_z++;
 	    		}
 	    		num_squares_x = count_z;
 	    		num_squares_y = count_z;
-
-
 	    		var count_x = 0;
 	    		var count_y = 0;
 				for (var x = 0; x < bBox.width; x += (box_size+stroke_width)) {	
@@ -185,51 +216,61 @@
 	        			svg.appendChild(rect);
 	        			count_y+=1;
 	    			}
-	    			
 	    			count_y = 0;
 	    			count_x+=1;
 				}
 				return count_x;
 			}
 
-	   		var actual_size = create_board(svg,num_squares_x, num_grid, rect_grid); //Discrepancy between how many squares I think I can fit and how many actually fit. If I try to fit 100 I can only fit 89
-			
-			// Redraws board
-			window.onresize = function() {
-				console.log("Was resized");
-				d3.selectAll(".rect_class").remove();
+			live_count = 0;
+			// Initialize a random grid
+			for (var x = 0; x < num_squares_x; x += 1) {	
+	    			for (var y = 0; y < num_squares_x; y += 1) { 
+						if (Math.random() > rand_weight){
+	    					num_grid[x*num_squares_x+y] = 1;
+	    					live_count++;
+	    				}
+	    				else
+	    					num_grid[x*num_squares_x+y] = 0;
+	    		}
+	    	}
+	    	document.getElementById("count_id").innerHTML = "Live Cells: "+live_count;
 
+
+	   		var actual_size = create_board(svg,num_squares_x, num_grid, rect_grid); //Discrepancy between how many squares I think I can fit
+			
+			
+			window.onresize = function() {
+				d3.selectAll(".rect_class").remove();
 	    		create_board(svg,num_squares_x, num_grid, rect_grid);
 			}
 
-			// Randomizes a created grid
 			function randomize_grid(){
-				console.log("was randomized");
-				//console.log(num_squares_x);
-				//console.log(actual_size);
-				//console.log(rect_grid)
+				gen_count = 0;
+				live_count = 0;
+				document.getElementById("gen_id").innerHTML = "Generation: "+gen_count;
 				for (var x = 0; x < num_squares_x; x += 1) {	
 	    			for (var y = 0; y < num_squares_x; y += 1) { 
 	    				//console.log("Good: "+ (x*actual_size+" " +y));
 	    				if (rect_grid[x*num_squares_x+y] == undefined){
 	    					continue;
 	    				}
-	    				if (Math.random() > .85){    //SET HOW POPULATED RANDOM WORDS ARE
+	    				if (Math.random() > rand_weight){ 
 	    					num_grid[x*num_squares_x+y] = 1;
+	    					live_count++;
 	    					rect_grid[x*num_squares_x+y].setAttributeNS(null, 'fill', '#0099ff'); //#0099ff
 	    				}
 	    				else
 	    				{
-
 	    					num_grid[x*num_squares_x+y] = 0;
 	    					rect_grid[x*num_squares_x+y].setAttributeNS(null, 'fill', '#fff');
 	    				}
 	    			}
 	    		}
-	    		//console.log(num_grid);
+	    		document.getElementById("count_id").innerHTML = "Live Cells: "+live_count;
 			}
 
-			// no overflow, keeps variables in bounds
+			// Edge checking for toroidal array
 			function no_o(variable){
 				if (variable >= num_squares_x )
 					return variable - num_squares_x;
@@ -240,69 +281,45 @@
 
 			function get_neighbors(x, y){
 				var n = 0;
-
-				if (num_grid[x*num_squares_x+no_o(y+1)] == 1){ // right
+				if (num_grid[x*num_squares_x+no_o(y+1)] == 1)// right
 					n++;
-					//console.log("down");
-					//console.log(x*num_squares_x+no_o(y+1));
-				}
-				if (num_grid[x*num_squares_x+no_o(y-1)] == 1){ // left
+				if (num_grid[x*num_squares_x+no_o(y-1)] == 1) // left
 					n++;
-					//console.log("up");
-					
-
-				}
-			
-				if (num_grid[no_o(x+1)*num_squares_x+y] == 1){// down
+				if (num_grid[no_o(x+1)*num_squares_x+y] == 1)// down
 					n++;
-					//console.log("right");
-				}
-				if (num_grid[no_o(x-1)*num_squares_x+y] == 1){ // up
+				if (num_grid[no_o(x-1)*num_squares_x+y] == 1) // up
 					n++;
-					//console.log("left");
-				}
-				if (num_grid[no_o(x-1)%num_squares_x*num_squares_x+no_o(y+1)] == 1){ // up right
+				if (num_grid[no_o(x-1)*num_squares_x+no_o(y+1)] == 1) // up right
 					n++;
-					//console.log("left down");
-				}
-				if (num_grid[no_o(x-1)*num_squares_x+no_o(y-1)] == 1){ // up left
+				if (num_grid[no_o(x-1)*num_squares_x+no_o(y-1)] == 1) // up left
 					n++;
-					//console.log("left up");
-				}
-				if (num_grid[no_o(x+1)*num_squares_x+no_o(y+1)] == 1){ // down right
+				if (num_grid[no_o(x+1)*num_squares_x+no_o(y+1)] == 1) // down right
 					n++;
-					//console.log("right down");
-				}
-				if (num_grid[no_o(x+1)*num_squares_x+no_o(y-1)] == 1){ // down left
+				if (num_grid[no_o(x+1)*num_squares_x+no_o(y-1)] == 1) // down left
 					n++;
-					//console.log("right up");
-				}
-				//console.log(x +" " +  y+ " " +n);
-				
 				return n;
 			}
 
+
+			// Fitness function. Determines if cell lives or dies.
 			function next_gen(n, wasAlive){
 				if (wasAlive == 1){
-					if (n < 2)
-						return 0;
-					else if (n == 3 || n == 2)
-						return 1;
-					else if (n > 3)
-						return 0;
+					if (n < 2) return 0;
+					else if (n == 3 || n == 2) return 1;
+					else if (n > 3) return 0;
 				}
-				else{
-					if (n == 3)
-						return 1;
+				else { 
+					if (n == 3) return 1;
 				}
 				return 0; //0 means dead, 1 means alive
 			}
 
 			function game_tick(){
-				//console.log(rect_grid);
-				//console.log(num_grid);
+				live_count = 0;
+				gen_count+=1;
+				console.log(gen_count);
+				document.getElementById("gen_id").innerHTML = "Generation: "+gen_count;
 				num_grid_copy = num_grid.slice();
-				console.log(num_grid);
 				for (var x = 0; x < num_squares_x; x += 1) {	
 	    			for (var y = 0; y < num_squares_x; y += 1) { 
 	    				if (rect_grid[x*num_squares_x+y] == undefined){
@@ -311,60 +328,81 @@
 	    				var n = get_neighbors(x,y);
 	    				var isAliveInNextGen = next_gen(n, num_grid[x*num_squares_x+y]);
 	    				num_grid_copy[x*num_squares_x+y] =  isAliveInNextGen;
+	    				
 	    				if (isAliveInNextGen == 1){
+	    					live_count++;
 	    					rect_grid[x*num_squares_x+y].setAttributeNS(null, 'fill', '#0099ff');
 
 	    				}
 	    				else {
 	    					rect_grid[x*num_squares_x+y].setAttributeNS(null, 'fill', '#fff');
-	    					
-	    				}
-	    				
+	    					if (num_grid[x*num_squares_x+y] == 1)
+	    						rect_grid[x*num_squares_x+y].setAttributeNS(null, 'fill', '#9ad7ff'); //shadow where things died
+	    				}	
 	    			}
 	    		}
 	    		num_grid = num_grid_copy;
-			}
 
+				document.getElementById("count_id").innerHTML = "Live Cells: "+live_count;
+			}
 
 			function next(){
 				game_tick();
 			}
 
 			function stop() {
-    running = false;
-    started = false;
-   
-}
-			function start() {
-   			 for (var x = 0; x < 100; x ++){
-   			 	console.log("game tick");
-   			 	game_tick();
-   			 }
-}
-
+    			running = false;
+    			document.getElementById("stop").style.display = "none";
+    			document.getElementById("stop_box").style.display = "none";
+    			document.getElementById("start").style.display = "inline-block";
+    			document.getElementById("start_box").style.display = "inline-block";
+    			document.getElementById("delay_slider").disabled = false;
+			}
 
 			
+			function start() {
+   				var inc = 0,
+       			max = 100; 
+       			
+       			running = true;
+       			document.getElementById("start").style.display = "none";
+       			document.getElementById("start_box").style.display = "none";
+    			document.getElementById("stop").style.display = "inline-block";
+    			document.getElementById("stop_box").style.display = "inline-block";
+    			document.getElementById("delay_slider").disabled = true;
+  		 		var repeat = setInterval(function() {
+                	game_tick();
+   
+                	if (running == false) clearInterval(repeat);
+                	},
+                delay);
+			}
 
+
+			//Things to add: 
+			//generation and population counters
+			//Starting randomness density slider
+			
 
 		</script>
-			</svg>
-		
-			<div class="box">
-				<a class="button" onclick="next()">Next</a>
-			</div>
-			<div class="box">
-				<a id="Start"class="button">Start</a>
-			</div>
-			<div class="box">
-				<a class="button" onclick="stop()">Stop</a>
-			</div>
-			<div class="box">
-				<a class="button" onclick="randomize_grid()">Randomize</a>
-			</div>
-			<div class="box">
-				<a class="button" href="#popup1">About</a>
-			</div>
-			
+			<script>
+				//Hide stop initially
+				document.getElementById("stop").style.display = "none"; 
+				document.getElementById("stop_box").style.display = "none"; 
+				var delay_slider = document.getElementById("delay_slider");
+				delay_slider.oninput = function() {
+   				delay = this.value;
+   				
+   				
+   				
+			}
+			var seed_slider = document.getElementById("density_slider");
+				seed_slider.oninput = function() {
+   				rand_weight = this.value/100;
+   				rand_weight = 1 - rand_weight;
+   				console.log(rand_weight);
+   			}
+			</script>
 			<div id="popup1" class="overlay">
 			<div class="popup">
 			<h2>Game of Life Implementation</h2>
@@ -376,7 +414,6 @@
 			</div>
 
 			<script>
-				document.getElementById('Start').addEventListener("click", start);
 			</script>
 
 	 
